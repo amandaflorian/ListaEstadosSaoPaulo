@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 
@@ -14,65 +15,81 @@ class listestado extends StatelessWidget {
 }
 
 class RandomWords extends StatefulWidget {
+  get feeds => null;
+
+  get onInit => null;
+
   @override
-  _RandomWordsState createState() => _RandomWordsState();
+  _RandomState createState() => _RandomState();
+}
+
+class _RandomState extends State<RandomWords> {
+  int _count = 0;
+
+  @override
+  void initState() {
+    if (widget.onInit != null) {
+      widget.onInit();
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Startup Name Generator'),
+      ),
+      body: const Center(),
+    );
+  }
+
+  Future<void> _incrementCounter() async {
+    setState(() {
+      _count++;
+    });
+    Future.delayed(Duration.zero, () async {
+      await File('assets/cidades.txt').writeAsString('$_count');
+    });
+    super.initState();
+  }
 }
 
 class _RandomWordsState extends State<RandomWords> {
   @override
   Widget build(BuildContext context) {
-    final wordPair = WordPair.random();
-    final _suggestions = <WordPair>[];
-    final _biggerFont = const TextStyle(fontSize: 18.0);
-
-    Widget _buildRow(WordPair pair) {
-      return ListTile(
-        title: Text(
-          pair.asPascalCase,
-          style: _biggerFont,
-        ),
-      );
-    }
-
-    Widget _buildSuggestions() {
-      return ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemBuilder: (context, i) {
-            if (i.isOdd) return const Divider();
-
-            final index = i ~/ 2;
-            if (index >= _suggestions.length) {
-              _suggestions.addAll(generateWordPairs().take(10));
-            }
-            return _buildRow(_suggestions[index]);
-          });
-    }
-
-    return Text(wordPair.asPascalCase);
-  }
-}
-
-class InfiniteList extends RandomWords {
-  Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: loadString('assets/cidades.txt'),
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: Text('Please wait'));
-        } else {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else
-            return Center(child: new Text('${snapshot.data}'));
-        }
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Startup Name Generator'),
+      ),
+      body: _buildSuggestions(),
     );
   }
 
-  Future<String> loadAsset(BuildContext context) async {
-    return await DefaultAssetBundle.of(context)
-        .loadString('assets/cidades.txt');
+  final wordPair = WordPair.random();
+  final _suggestions = <WordPair>[];
+  final _biggerFont = const TextStyle(fontSize: 18.0);
+
+  Widget _buildRow(WordPair pair) {
+    return ListTile(
+      title: Text(
+        pair.asPascalCase,
+        style: _biggerFont,
+      ),
+    );
   }
 
-  loadString(String s) {}
+  Widget _buildSuggestions() {
+    return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemBuilder: (context, i) {
+          if (i.isOdd) return const Divider();
+
+          final index = i ~/ 2;
+          if (index >= _suggestions.length) {
+            _suggestions.addAll(generateWordPairs().take(10));
+          }
+          return _buildRow(_suggestions[index]);
+        });
+  }
 }
